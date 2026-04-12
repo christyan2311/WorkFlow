@@ -1,10 +1,12 @@
 /* =============================================
-   MEU PONTO — App Logic v2
+   MEU PONTO — App Logic v3
    - Fuso horário local (sem toISOString)
    - IndexedDB (sem limite de localStorage)
    - Compressão de imagem via Canvas API
    - Limpeza automática de registros > 90 dias
    - Renderização async/await
+   - Fix: câmera com delay para iOS/Android
+   - Fix: cloneNode substituído por abordagem segura
    ============================================= */
 
 // ── Constants ──────────────────────────────────
@@ -138,12 +140,12 @@ function idbGetAllKeys() {
 // ── 3. IMAGE COMPRESSION (Canvas API) ──────────
 function compressImage(file) {
   return new Promise((resolve, reject) => {
-    const reader = new FileReader();
+    const reader  = new FileReader();
     reader.onerror = reject;
     reader.onload  = (e) => {
-      const img    = new Image();
-      img.onerror  = reject;
-      img.onload   = () => {
+      const img   = new Image();
+      img.onerror = reject;
+      img.onload  = () => {
         let { width, height } = img;
         if (width > MAX_IMG_PX) {
           height = Math.round((height * MAX_IMG_PX) / width);
@@ -220,33 +222,41 @@ async function renderToday() {
   const slots  = record ? record.slots : {};
 
   SLOTS.forEach((s) => {
-    const old   = document.getElementById(`slot-${s}`);
-    const fresh = old.cloneNode(false);
-    old.parentNode.replaceChild(fresh, old);
     const el    = document.getElementById(`slot-${s}`);
     const entry = slots[s];
 
+    // Limpar conteúdo e classes sem clonar o nó
+    // (clonar quebra o getElementById em alguns browsers mobile)
+    el.innerHTML  = '';
+    el.className  = entry ? 'slot filled' : 'slot';
+
+    // Remover todos os listeners antigos substituindo por novo handler via onclick
+    el.onclick = null;
+
     if (entry) {
-      el.className = 'slot filled';
       el.innerHTML = `
         <img class="slot-thumb" src="${entry.img}" alt="${SLOT_LABELS[s]}" />
         <div class="slot-label">${SLOT_LABELS[s]}</div>
         <div class="slot-time">${entry.time}</div>
         <button class="slot-remove" aria-label="Remover ${SLOT_LABELS[s]}">✕</button>
       `;
+      // Botão de remoção
       el.querySelector('.slot-remove').addEventListener('click', (e) => {
         e.stopPropagation();
         removeSlot(s);
       });
-      el.addEventListener('click', () => openCamera(s));
     } else {
-      el.className = 'slot';
       el.innerHTML = `
         <div class="slot-icon">${SLOT_ICONS[s]}</div>
         <div class="slot-label">${SLOT_LABELS[s]}</div>
       `;
-      el.addEventListener('click', () => openCamera(s));
     }
+
+    // Clique sempre presente — abre câmera (tanto vazio quanto preenchido para substituir)
+    el.onclick = (e) => {
+      if (e.target.classList.contains('slot-remove')) return;
+      openCamera(s);
+    };
   });
 
   renderSummary(slots);
@@ -264,12 +274,21 @@ function openCamera(slot) {
   activeSlot = slot;
   const fi   = document.getElementById('file-input');
   fi.value   = '';
-  fi.click();
+  // Delay de 50ms necessário para iOS/Android não perder o contexto do activeSlot
+  setTimeout(() => fi.click(), 50);
 }
 
 document.getElementById('file-input').addEventListener('change', async function () {
   const file = this.files[0];
-  if (!file || !activeSlot) return;
+
+  if (!file) {
+    console.warn('[camera] Nenhum arquivo selecionado.');
+    return;
+  }
+  if (!activeSlot) {
+    console.warn('[camera] activeSlot nulo — slot perdido antes do retorno da câmera.');
+    return;
+  }
 
   const capturedSlot = activeSlot;
   activeSlot         = null;
@@ -288,7 +307,7 @@ document.getElementById('file-input').addEventListener('change', async function 
     }
   } catch (err) {
     console.error('[camera] Erro ao salvar:', err);
-    alert('Erro ao salvar a foto. Tente novamente.');
+    alert('Erro ao salvar a foto: ' + err.message);
   }
 });
 
