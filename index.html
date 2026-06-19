@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <meta name="theme-color" content="#0f172a" />
+  <meta name="theme-color" content="#060B14" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="Meu Ponto" />
@@ -15,102 +15,156 @@
 </head>
 <body>
   <div id="app">
+
+    <!-- HEADER -->
     <header class="app-header">
       <div class="header-inner">
         <div class="logo">
-          <span class="logo-icon">⏱</span>
-          <span class="logo-text">Meu Ponto</span>
+          <div class="logo-mark">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <circle cx="7" cy="7" r="2.5" fill="#00D4FF"/>
+              <path d="M7 1v2M7 11v2M1 7h2M11 7h2" stroke="#00D4FF" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <div>
+            <span class="logo-text">Meu Ponto</span>
+            <span class="logo-sub">v3.0</span>
+          </div>
+        </div>
+        <div class="header-status">
+          <div class="status-dot"></div>
+          <span id="header-clock">--:--</span>
         </div>
       </div>
     </header>
 
+    <!-- TABS -->
     <nav class="tab-bar">
       <button class="tab active" data-tab="hoje" onclick="showTab('hoje')">Hoje</button>
       <button class="tab" data-tab="historico" onclick="showTab('historico')">Histórico</button>
     </nav>
 
     <main class="main-content">
+
       <!-- VIEW: HOJE -->
       <div id="view-hoje" class="view active">
+
+        <!-- Date nav -->
         <div class="date-bar">
           <button class="date-nav" onclick="changeDate(-1)" aria-label="Dia anterior">&#8592;</button>
-          <span id="current-date-label" class="date-label"></span>
+          <div>
+            <span class="date-eyebrow">Data ativa</span>
+            <span id="current-date-label" class="date-label"></span>
+          </div>
           <button class="date-nav" onclick="changeDate(1)" aria-label="Próximo dia">&#8594;</button>
         </div>
 
+        <!-- Slots -->
         <div class="slots-grid">
-          <div class="slot" id="slot-entrada" onclick="openCamera('entrada')" role="button" tabindex="0">
-            <div class="slot-icon">🕐</div>
-            <div class="slot-label">Entrada</div>
+          <div class="slot" id="slot-entrada" role="button" tabindex="0">
+            <span class="slot-num">01</span>
+            <div class="slot-inner">
+              <div class="slot-icon">🕐</div>
+              <div class="slot-label">Entrada</div>
+            </div>
           </div>
-          <div class="slot" id="slot-inicio_almoco" onclick="openCamera('inicio_almoco')" role="button" tabindex="0">
-            <div class="slot-icon">🍽</div>
-            <div class="slot-label">Início almoço</div>
+          <div class="slot" id="slot-inicio_almoco" role="button" tabindex="0">
+            <span class="slot-num">02</span>
+            <div class="slot-inner">
+              <div class="slot-icon">🍽</div>
+              <div class="slot-label">Início almoço</div>
+            </div>
           </div>
-          <div class="slot" id="slot-fim_almoco" onclick="openCamera('fim_almoco')" role="button" tabindex="0">
-            <div class="slot-icon">☕</div>
-            <div class="slot-label">Fim almoço</div>
+          <div class="slot" id="slot-fim_almoco" role="button" tabindex="0">
+            <span class="slot-num">03</span>
+            <div class="slot-inner">
+              <div class="slot-icon">☕</div>
+              <div class="slot-label">Fim almoço</div>
+            </div>
           </div>
-          <div class="slot" id="slot-saida" onclick="openCamera('saida')" role="button" tabindex="0">
-            <div class="slot-icon">🚪</div>
-            <div class="slot-label">Saída</div>
+          <div class="slot" id="slot-saida" role="button" tabindex="0">
+            <span class="slot-num">04</span>
+            <div class="slot-inner">
+              <div class="slot-icon">🚪</div>
+              <div class="slot-label">Saída</div>
+            </div>
           </div>
         </div>
 
-        <p class="camera-hint">Toque em cada quadro para fotografar o ticket</p>
+        <p class="camera-hint">// toque para fotografar o ticket</p>
 
+        <!-- Summary -->
         <div class="summary-card">
-          <div class="summary-row">
-            <span class="summary-key">Entrada</span>
-            <span class="summary-val" id="s-entrada">--:--</span>
+          <div class="summary-header">
+            <span class="summary-header-label">Resumo do dia</span>
+            <span class="summary-header-status" id="summary-status">aguardando</span>
           </div>
-          <div class="summary-row">
-            <span class="summary-key">Início almoço</span>
-            <span class="summary-val" id="s-inicio_almoco">--:--</span>
-          </div>
-          <div class="summary-row">
-            <span class="summary-key">Fim almoço</span>
-            <span class="summary-val" id="s-fim_almoco">--:--</span>
-          </div>
-          <div class="summary-row">
-            <span class="summary-key">Saída</span>
-            <span class="summary-val" id="s-saida">--:--</span>
-          </div>
-          <div class="summary-divider"></div>
-          <div class="summary-row summary-total">
-            <span class="summary-key">Total trabalhado</span>
-            <span class="summary-val" id="s-total">--h --min</span>
+          <div class="summary-rows">
+            <div class="summary-row">
+              <span class="summary-key">Entrada</span>
+              <span class="summary-val" id="s-entrada">--:--</span>
+            </div>
+            <div class="summary-row">
+              <span class="summary-key">Início almoço</span>
+              <span class="summary-val" id="s-inicio_almoco">--:--</span>
+            </div>
+            <div class="summary-row">
+              <span class="summary-key">Fim almoço</span>
+              <span class="summary-val" id="s-fim_almoco">--:--</span>
+            </div>
+            <div class="summary-row">
+              <span class="summary-key">Saída</span>
+              <span class="summary-val" id="s-saida">--:--</span>
+            </div>
+            <div class="summary-divider"></div>
+            <div class="summary-row summary-total">
+              <span class="summary-key">Total trabalhado</span>
+              <span class="summary-val" id="s-total">--h --min</span>
+            </div>
           </div>
         </div>
 
         <button class="export-btn" onclick="exportDay()">
-          💾 Exportar registro do dia (.csv)
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <path d="M7 1v8M4 6l3 3 3-3M2 11h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Exportar CSV
         </button>
       </div>
 
       <!-- VIEW: HISTÓRICO -->
       <div id="view-historico" class="view">
         <div class="history-list" id="history-list">
-          <p class="empty-state">Nenhum registro ainda.</p>
+          <p class="empty-state">// nenhum registro</p>
         </div>
       </div>
+
     </main>
   </div>
 
-  <!-- Input de câmera — oculto -->
+  <!-- Input câmera — oculto -->
   <input type="file" id="file-input" accept="image/*" capture="environment" aria-hidden="true" />
 
-  <!-- Modal de detalhe do dia -->
+  <!-- Modal detalhe do dia -->
   <div class="modal-overlay hidden" id="modal" onclick="closeModal(this, event)">
     <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+      <div class="modal-handle"></div>
       <div class="modal-header">
-        <span class="modal-title" id="modal-title"></span>
+        <div class="modal-title-wrap">
+          <span class="modal-eyebrow">Detalhe</span>
+          <span class="modal-title" id="modal-title"></span>
+        </div>
         <button class="modal-close" onclick="closeModal()" aria-label="Fechar">✕</button>
       </div>
       <div class="modal-slots" id="modal-slots"></div>
-      <button class="export-btn" id="modal-export-btn" style="margin-top:1rem;">
-        💾 Exportar este dia (.csv)
-      </button>
+      <div class="modal-export">
+        <button class="export-btn" id="modal-export-btn">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <path d="M7 1v8M4 6l3 3 3-3M2 11h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Exportar CSV
+        </button>
+      </div>
     </div>
   </div>
 
